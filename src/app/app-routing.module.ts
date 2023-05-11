@@ -5,7 +5,7 @@ import { AppComponent } from './app.component';
 const routes: Routes = [
   {
     path: '',
-    redirectTo: 'recipes',
+    redirectTo: 'tabs',
     pathMatch: 'full'
   },
   {
