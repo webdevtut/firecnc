@@ -16,5 +16,9 @@ export class PlacesService {
     return [...this._places];
   }
 
+  getplace(id: string) {
+    return {...this._places.find(p => p.id === id)};
+  }
+
   constructor() { }
 }
