@@ -7,18 +7,24 @@
     </ion-header>
     <ion-content>
       <ion-list>
-        <ion-item lines="none">
-          <ion-icon name="storefront-outline" slot="start"></ion-icon>
-          <ion-label>Discover Places</ion-label>
-        </ion-item>
-        <ion-item lines="none">
-          <ion-icon name="bag-check-outline" slot="start"></ion-icon>
-          <ion-label>Your Bookings</ion-label>
-        </ion-item>
-        <ion-item lines="none">
-          <ion-icon name="exit" slot="start"></ion-icon>
-          <ion-label>Logout</ion-label>
-        </ion-item>
+        <ion-menu-toggle menuId="m1">
+          <ion-item lines="none" [routerLink]="['/', 'places', 'tabs', 'discover']">
+            <ion-icon name="storefront-outline" slot="start"></ion-icon>
+            <ion-label>Discover Places</ion-label>
+          </ion-item>
+        </ion-menu-toggle>
+        <ion-menu-toggle>
+          <ion-item lines="none" [routerLink]="['/bookings']">
+            <ion-icon name="bag-check-outline" slot="start"></ion-icon>
+            <ion-label>Your Bookings</ion-label>
+          </ion-item>
+        </ion-menu-toggle>
+        <ion-menu-toggle>
+          <ion-item lines="none" (click)="onLogout()" button>
+            <ion-icon name="exit" slot="start"></ion-icon>
+            <ion-label>Logout</ion-label>
+          </ion-item>
+        </ion-menu-toggle>
       </ion-list>
     </ion-content>
   </ion-menu>
