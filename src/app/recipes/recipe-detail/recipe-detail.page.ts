@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { RecipesService } from '../recipes.service';
 import { Recipe } from '../recipe.model';
@@ -9,7 +9,7 @@ import { AlertController } from '@ionic/angular';
   templateUrl: './recipe-detail.page.html',
   styleUrls: ['./recipe-detail.page.scss'],
 })
-export class RecipeDetailPage implements OnInit {
+export class RecipeDetailPage implements OnInit, OnDestroy {
   loadedRecipe: Recipe;
 
   constructor(
@@ -29,6 +29,10 @@ export class RecipeDetailPage implements OnInit {
       this.loadedRecipe = this.recipesService.getRecipe(recipeId);
     });
     
+  }
+  ngOnDestroy() {
+    //Gets Executed here for now as stacked page removed from cache
+    console.log('ngOnDestroy');
   }
 
   deleteRecipe() {
