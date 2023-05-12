@@ -12,6 +12,13 @@ export class BookingService {
       placeTitle: 'Juhu Villa',
       guestnumber: 2,
       userId: 'abc'
+    },
+    {
+      id:'2',
+      placeId: '2',
+      placeTitle: 'Versova Bungalow',
+      guestnumber: 6,
+      userId: 'abc'
     }
   ];
 
