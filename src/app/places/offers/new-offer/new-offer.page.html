@@ -8,7 +8,7 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-grid>
+  <ion-grid [fixed]="true">
     <ion-row class="ion-align-items-center ion-justify-content-center">
       <ion-col size="5" size-sm="4" size-md="2" offset-sm="2" offset-md="4">Row 1 col 1</ion-col>
       <ion-col size="1" size-sm="4" size-md="3">
@@ -19,6 +19,10 @@
           </ion-card-content>
         </ion-card>
       </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col>1</ion-col>
+      <ion-col>2</ion-col>
     </ion-row>
   </ion-grid>
 </ion-content>
