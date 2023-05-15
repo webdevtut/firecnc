@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { PlacesService } from '../../places.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-new-offer',
@@ -9,39 +11,46 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 export class NewOfferPage implements OnInit {
   form: FormGroup;
 
-  constructor() { }
+  constructor(private placeService: PlacesService, private Router: Router) {}
 
   ngOnInit() {
     this.form = new FormGroup({
       title: new FormControl(null, {
         updateOn: 'blur',
-        validators: [Validators.required]
+        validators: [Validators.required],
       }),
       description: new FormControl(null, {
         updateOn: 'blur',
-        validators: [Validators.required, Validators.maxLength(180)]
+        validators: [Validators.required, Validators.maxLength(180)],
       }),
       price: new FormControl(null, {
         updateOn: 'blur',
-        validators: [Validators.required, Validators.min(1)]
+        validators: [Validators.required, Validators.min(1)],
       }),
-      dateFrom : new FormControl(null, {
+      dateFrom: new FormControl(null, {
         updateOn: 'blur',
-        validators: [Validators.required]
+        validators: [Validators.required],
       }),
       dateTo: new FormControl(null, {
         updateOn: 'blur',
-        validators: [Validators.required]
-      })
+        validators: [Validators.required],
+      }),
     });
   }
 
-
   onCreateOffer() {
-    if(this.form.invalid) {
+    if (this.form.invalid) {
       return;
     }
-    console.log(this.form);
+    this.placeService.addplaces(
+      this.form.value.title,
+      this.form.value.description,
+      +this.form.value.price,
+      new Date(this.form.value.dateFrom),
+      new Date(this.form.value.dateTo)
+    );
+    this.form.reset();
+      this.Router.navigate(['/places/tabs/offers'])
+    
   }
-
 }

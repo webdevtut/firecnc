@@ -1,25 +1,36 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { PlacesService } from '../places.service';
 import { Place } from '../place.model';
 import { InfiniteScrollCustomEvent, SegmentChangeEventDetail } from '@ionic/angular';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-discover',
   templateUrl: './discover.page.html',
   styleUrls: ['./discover.page.scss'],
 })
-export class DiscoverPage implements OnInit {
+export class DiscoverPage implements OnInit, OnDestroy {
 
   loadedPlaces: Place[];
 
-  constructor(private placeService : PlacesService) { }
+  private placesSub : Subscription;
 
+  constructor(private placeService : PlacesService) { }
+  
   ngOnInit() {
-    this.loadedPlaces = this.placeService.getplaces();
+    this.placesSub = this.placeService.places.subscribe(places => {
+      this.loadedPlaces = places;
+    });
+  }
+  
+  ngOnDestroy() {
+    if(this.placesSub) {
+      this.placesSub.unsubscribe();
+    }
   }
 
   onIonInfinite(ev) {
-    let arr = Array(50).fill(new Place('1', 'Juhu Villa', 'In the heart of Mumbai City', 'https://www.narains.com/resources/upload/project_images/11eabac19194ebd6829d8c8dada6263a.jpg',2000,new Date('2023-01-01'), new Date('2023-12-31')))
+    let arr = Array(50).fill(new Place('1', 'Juhu Villa', 'In the heart of Mumbai City', 'https://www.narains.com/resources/upload/project_images/11eabac19194ebd6829d8c8dada6263a.jpg',2000,new Date('2023-01-01'), new Date('2023-12-31'),'abc'))
    
    arr.forEach(element => {
      this.loadedPlaces.push(element);
