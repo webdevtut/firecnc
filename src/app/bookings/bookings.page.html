@@ -11,7 +11,10 @@
 <ion-content class="ion-padding">
   <ion-grid>
     <ion-row>
-      <ion-col size-md="6" offset-md="3">
+      <ion-col size-md="6" offset-md="3" *ngIf="!loadedBookings || loadedBookings.length <= 0" class="ion-text-center">
+        <ion-text color="tertiary">No Bookings found</ion-text>
+      </ion-col>
+      <ion-col size-md="6" offset-md="3" *ngIf="loadedBookings && loadedBookings.length > 0">
         <ion-list>
           <ion-item-sliding *ngFor="let booking of loadedBookings" #slidingBooking>
             <ion-item>
@@ -25,7 +28,7 @@
                 <ion-icon name="trash" slot="icon-only"></ion-icon>
               </ion-item-option>
             </ion-item-options>
-          </ion-item-sliding>
+        </ion-item-sliding>
         </ion-list>
       </ion-col>
     </ion-row>
