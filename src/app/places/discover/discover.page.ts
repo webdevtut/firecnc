@@ -19,7 +19,7 @@ export class DiscoverPage implements OnInit {
   }
 
   onIonInfinite(ev) {
-    let arr = Array(50).fill(new Place('1', 'Juhu Villa', 'In the heart of Mumbai City', 'https://www.narains.com/resources/upload/project_images/11eabac19194ebd6829d8c8dada6263a.jpg',2000))
+    let arr = Array(50).fill(new Place('1', 'Juhu Villa', 'In the heart of Mumbai City', 'https://www.narains.com/resources/upload/project_images/11eabac19194ebd6829d8c8dada6263a.jpg',2000,new Date('2023-01-01'), new Date('2023-12-31')))
    
    arr.forEach(element => {
      this.loadedPlaces.push(element);
