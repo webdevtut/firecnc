@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import { NavController } from '@ionic/angular';
+import { ActivatedRoute, Router } from '@angular/router';
+import { LoadingController, NavController } from '@ionic/angular';
 import { PlacesService } from '../../places.service';
 import { Place } from '../../place.model';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
@@ -19,45 +19,62 @@ export class EditOfferPage implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private placesService: PlacesService,
-    private navCtrl: NavController
-  ) { }
-  
+    private navCtrl: NavController,
+    private loaderCtrl: LoadingController,
+    private router: Router
+  ) {}
+
   ngOnInit() {
-    this.route.paramMap.subscribe(paramMap => {
-      if(!paramMap.has('placeId')) {
+    this.route.paramMap.subscribe((paramMap) => {
+      if (!paramMap.has('placeId')) {
         this.navCtrl.navigateBack('places/tabs/offers');
         return;
       }
       this.placesService
-      .getplace(paramMap.get('placeId'))
-      .subscribe((place) => {
-        this.place = place;
-        this.form = new FormGroup ({
-          title: new FormControl(this.place.title, {
-            updateOn: 'blur',
-            validators: [Validators.required]
-          }),
-          description: new FormControl(this.place.description, {
-            updateOn: 'blur',
-            validators: [Validators.required, Validators.maxLength(180)]
-          })
-        })
-      });
-    })
+        .getplace(paramMap.get('placeId'))
+        .subscribe((place) => {
+          this.place = place;
+          this.form = new FormGroup({
+            title: new FormControl(this.place.title, {
+              updateOn: 'blur',
+              validators: [Validators.required],
+            }),
+            description: new FormControl(this.place.description, {
+              updateOn: 'blur',
+              validators: [Validators.required, Validators.maxLength(180)],
+            }),
+          });
+        });
+    });
   }
 
-  ngOnDestroy(){
+  ngOnDestroy() {
     if (this.placeSub) {
       this.placeSub.unsubscribe();
     }
   }
-
+ 
   onUpdateOffer() {
-    if(this.form.invalid) {
+    if (this.form.invalid) {
       return;
     }
-    console.log(this.form);
-    
+    this.loaderCtrl
+      .create({
+        message: 'Updating Place...',
+      })
+      .then((loadingEl) => {
+        loadingEl.present();
+        this.placesService
+          .updatePlace(
+            this.place.id,
+            this.form.value.title,
+            this.form.value.description
+          )
+          .subscribe(() => {
+            loadingEl.dismiss();
+            this.form.reset();
+            this.router.navigate(['/places/tabs/offers']);
+          });
+      });
   }
-
 }
