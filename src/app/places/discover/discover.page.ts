@@ -3,6 +3,7 @@ import { PlacesService } from '../places.service';
 import { Place } from '../place.model';
 import { InfiniteScrollCustomEvent, SegmentChangeEventDetail } from '@ionic/angular';
 import { Subscription } from 'rxjs';
+import { AuthService } from '../../auth/auth.service';
 
 @Component({
   selector: 'app-discover',
@@ -10,39 +11,61 @@ import { Subscription } from 'rxjs';
   styleUrls: ['./discover.page.scss'],
 })
 export class DiscoverPage implements OnInit, OnDestroy {
-
   loadedPlaces: Place[];
+  relevantPlaces: Place[];
 
-  private placesSub : Subscription;
+  private placesSub: Subscription;
 
-  constructor(private placeService : PlacesService) { }
-  
+  constructor(
+    private placeService: PlacesService,
+    private authService: AuthService
+  ) {}
+
   ngOnInit() {
-    this.placesSub = this.placeService.places.subscribe(places => {
+    this.placesSub = this.placeService.places.subscribe((places) => {
       this.loadedPlaces = places;
+      this.relevantPlaces = this.loadedPlaces;
     });
   }
-  
+
   ngOnDestroy() {
-    if(this.placesSub) {
+    if (this.placesSub) {
       this.placesSub.unsubscribe();
     }
   }
 
   onIonInfinite(ev) {
-    let arr = Array(50).fill(new Place('1', 'Juhu Villa', 'In the heart of Mumbai City', 'https://www.narains.com/resources/upload/project_images/11eabac19194ebd6829d8c8dada6263a.jpg',2000,new Date('2023-01-01'), new Date('2023-12-31'),'abc'))
-   
-   arr.forEach(element => {
-     this.loadedPlaces.push(element);
-   });
-   
+    let arr = Array(50).fill(
+      new Place(
+        '1',
+        'Juhu Villa',
+        'In the heart of Mumbai City',
+        'https://www.narains.com/resources/upload/project_images/11eabac19194ebd6829d8c8dada6263a.jpg',
+        2000,
+        new Date('2023-01-01'),
+        new Date('2023-12-31'),
+        'abc'
+      )
+    );
+
+    arr.forEach((element) => {
+      this.loadedPlaces.push(element);
+    });
+
     setTimeout(() => {
       (ev as InfiniteScrollCustomEvent).target.complete();
     }, 500);
   }
 
-  onFilterUpdate(event: any){
+  onFilterUpdate(event: any) {
     console.log(event.detail);
+    if (event.detail.value === 'all') {
+      this.relevantPlaces = this.loadedPlaces;
+    } else {
+      this.relevantPlaces = this.loadedPlaces.filter(
+        (place) => place.userId !== this.authService.userId
+      );
+      console.log(this.relevantPlaces);
+    }
   }
-
 }
