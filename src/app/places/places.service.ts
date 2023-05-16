@@ -75,7 +75,7 @@ export class PlacesService {
     dateFrom: Date,
     dateTo: Date
   ) {
-    let generatedId : string;
+    let generatedId: string;
     const newPlace = new Place(
       Math.random().toString(),
       title,
@@ -86,20 +86,22 @@ export class PlacesService {
       dateTo,
       this.authService.userId
     );
-    return this.http.post<{name: string}>(
-      'https://ionic-angular-backend-66c35-default-rtdb.asia-southeast1.firebasedatabase.app/offered-places.json',
-      { ...newPlace, id: null }
-    ).pipe(
-      switchMap(resData => {
-        generatedId = resData.name;
-        return this.places;
-      }),
-      take(1),
-      tap((places) => {
-        newPlace.id = generatedId;
-      this._places.next(places.concat(newPlace));
-      })
-    );
+    return this.http
+      .post<{ name: string }>(
+        'https://ionic-angular-backend-66c35-default-rtdb.asia-southeast1.firebasedatabase.app/offered-places.json',
+        { ...newPlace, id: null }
+      )
+      .pipe(
+        switchMap((resData) => {
+          generatedId = resData.name;
+          return this.places;
+        }),
+        take(1),
+        tap((places) => {
+          newPlace.id = generatedId;
+          this._places.next(places.concat(newPlace));
+        })
+      );
     // return this._places.pipe(
     //   take(1),
     //   delay(1000),
@@ -110,12 +112,12 @@ export class PlacesService {
   }
 
   updatePlace(placeId: string, title: string, description: string) {
+    let updatedPlaces: Place[];
     return this.places.pipe(
       take(1),
-      delay(1000),
-      tap((places) => {
+      switchMap((places) => {
         const updatedPlaceIndex = places.findIndex((pl) => pl.id === placeId);
-        const updatedPlaces = [...places];
+        updatedPlaces = [...places];
         const oldPlace = updatedPlaces[updatedPlaceIndex];
         updatedPlaces[updatedPlaceIndex] = new Place(
           oldPlace.id,
@@ -127,6 +129,12 @@ export class PlacesService {
           oldPlace.availableTo,
           oldPlace.userId
         );
+        return this.http.put(
+          `https://ionic-angular-backend-66c35-default-rtdb.asia-southeast1.firebasedatabase.app/offered-places/${placeId}.json`,
+          { ...updatedPlaces[updatedPlaceIndex], id: null }
+        );
+      }),
+      tap(() => {
         this._places.next(updatedPlaces);
       })
     );
