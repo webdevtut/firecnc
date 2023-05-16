@@ -1,13 +1,14 @@
 import { Injectable } from '@angular/core';
 import { Place } from './place.model';
 import { AuthService } from '../auth/auth.service';
-import { BehaviorSubject, delay, map, take, tap } from 'rxjs';
+import { BehaviorSubject, delay, map, switchMap, take, tap } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root',
 })
 export class PlacesService {
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService, private http : HttpClient) {}
 
   private _places = new BehaviorSubject<Place[]>([
     new Place(
@@ -62,6 +63,7 @@ export class PlacesService {
     dateFrom: Date,
     dateTo: Date
   ) {
+    let generatedId : string;
     const newPlace = new Place(
       Math.random().toString(),
       title,
@@ -72,13 +74,27 @@ export class PlacesService {
       dateTo,
       this.authService.userId
     );
-    return this._places.pipe(
+    return this.http.post<{name: string}>(
+      'https://ionic-angular-backend-66c35-default-rtdb.asia-southeast1.firebasedatabase.app/offered-places.json',
+      { ...newPlace, id: null }
+    ).pipe(
+      switchMap(resData => {
+        generatedId = resData.name;
+        return this.places
+      }),
       take(1),
-      delay(1000),
       tap((places) => {
-        this._places.next(places.concat(newPlace));
+        newPlace.id = generatedId;
+      this._places.next(places.concat(newPlace));
       })
     );
+    // return this._places.pipe(
+    //   take(1),
+    //   delay(1000),
+    //   tap((places) => {
+    //     this._places.next(places.concat(newPlace));
+    //   })
+    // );
   }
 
   updatePlace(placeId: string, title: string, description: string) {
