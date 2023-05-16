@@ -4,47 +4,59 @@ import { AuthService } from '../auth/auth.service';
 import { BehaviorSubject, delay, map, switchMap, take, tap } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 
+
+interface PlaceData {
+  availableFrom: string;
+  availableTo: string;
+  description: 'Your next home near international airport';
+  imageUrl: string;
+  price: number;
+  title: string;
+  userId: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class PlacesService {
-  constructor(private authService: AuthService, private http : HttpClient) {}
+  constructor(private authService: AuthService, private http: HttpClient) {}
 
-  private _places = new BehaviorSubject<Place[]>([
-    new Place(
-      '1',
-      'Juhu Villa',
-      'In the heart of Mumbai City',
-      'https://www.narains.com/resources/upload/project_images/11eabac19194ebd6829d8c8dada6263a.jpg',
-      2000,
-      new Date('2023-01-01'),
-      new Date('2023-12-31'),
-      'abcd'
-    ),
-    new Place(
-      '2',
-      'Versova Bungalow',
-      'Cozy Family Vacation Home',
-      'https://content.jdmagicbox.com/comp/mumbai/c5/022pxx22.xx22.220601124333.x8c5/catalogue/silver-waves-farm-boisar-palghar-farm-house-on-hire-ji12tvvg1o.jpg',
-      2500,
-      new Date('2023-01-01'),
-      new Date('2023-12-31'),
-      'abc'
-    ),
-    new Place(
-      '3',
-      'Madh Beach House',
-      'Not your typical Beach House',
-      'https://cf.bstatic.com/xdata/images/hotel/max1280x900/251732450.jpg?k=c291e2faa860f79f1a2f81766e5d518ab05bc27f0e421b7d5e1ec6f4e1dd7b54&o=&hp=1',
-      3000,
-      new Date('2023-01-01'),
-      new Date('2023-12-31'),
-      'abcd'
-    ),
-  ]);
+  private _places = new BehaviorSubject<Place[]>([]);
 
   get places() {
     return this._places.asObservable();
+  }
+
+  fetchPlaces() {
+    return this.http
+      .get<{ [key: string]: PlaceData }>(
+        'https://ionic-angular-backend-66c35-default-rtdb.asia-southeast1.firebasedatabase.app/offered-places.json'
+      )
+      .pipe(
+        map((resData) => {
+          const places = [];
+          for (const key in resData) {
+            if (resData.hasOwnProperty(key)) {
+              places.push(
+                new Place(
+                  key,
+                  resData[key].title,
+                  resData[key].description,
+                  resData[key].imageUrl,
+                  resData[key].price,
+                  new Date(resData[key].availableFrom),
+                  new Date(resData[key].availableTo),
+                  resData[key].userId
+                )
+              );
+            }
+          }
+          return places;
+        }),
+        tap((places) => {
+          this._places.next(places);
+        })
+      );
   }
 
   getplace(id: string) {
@@ -80,7 +92,7 @@ export class PlacesService {
     ).pipe(
       switchMap(resData => {
         generatedId = resData.name;
-        return this.places
+        return this.places;
       }),
       take(1),
       tap((places) => {
