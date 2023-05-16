@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Place } from './place.model';
 import { AuthService } from '../auth/auth.service';
-import { BehaviorSubject, delay, map, switchMap, take, tap } from 'rxjs';
+import { BehaviorSubject, delay, map, of, switchMap, take, tap } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 
 
@@ -60,12 +60,24 @@ export class PlacesService {
   }
 
   getplace(id: string) {
-    return this._places.pipe(
-      take(1),
-      map((places) => {
-        return { ...places.find((p) => p.id === id) };
-      })
-    );
+    return this.http
+      .get<PlaceData>(
+        `https://ionic-angular-backend-66c35-default-rtdb.asia-southeast1.firebasedatabase.app/offered-places/${id}.json`
+      )
+      .pipe(
+        map((placeData) => {
+          return new Place(
+            id,
+            placeData.title,
+            placeData.description,
+            placeData.imageUrl,
+            placeData.price,
+            new Date(placeData.availableFrom),
+            new Date(placeData.availableTo),
+            placeData.userId
+          );
+        })
+      );
   }
 
   addplaces(
@@ -116,6 +128,13 @@ export class PlacesService {
     return this.places.pipe(
       take(1),
       switchMap((places) => {
+        if(!places || places.length <=0 ){
+          return this.fetchPlaces();
+        } else {
+          return of(places);
+        }
+      }),
+      switchMap(places => {
         const updatedPlaceIndex = places.findIndex((pl) => pl.id === placeId);
         updatedPlaces = [...places];
         const oldPlace = updatedPlaces[updatedPlaceIndex];

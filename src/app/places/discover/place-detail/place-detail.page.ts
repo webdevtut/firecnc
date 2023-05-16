@@ -16,6 +16,7 @@ import { AuthService } from '../../../auth/auth.service';
 export class PlaceDetailPage implements OnInit, OnDestroy {
   place: Place;
   isBookable: Boolean = false;
+  isLoading: Boolean = false;
   private placeSub : Subscription;
   constructor(
     private router: Router,
@@ -30,12 +31,14 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
   ) {}
   
   ngOnInit() {
+    this.isLoading = true;
     this.route.paramMap.subscribe((paramMap) => {
       if (!paramMap.has('placeId')) {
         this.navctrl.navigateBack('/places/tabs/offers');
         return;
       }
       this.placeSub = this.placesService.getplace(paramMap.get('placeId')).subscribe(place => {
+        this.isLoading = false;
         this.place = place;
         this.isBookable = place.userId !== this.auth.userId;
       });
