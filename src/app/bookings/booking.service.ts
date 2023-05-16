@@ -1,8 +1,21 @@
 import { Injectable } from '@angular/core';
 import { Booking } from './booking.model';
-import { BehaviorSubject, delay, switchMap, take, tap } from 'rxjs';
+import { BehaviorSubject, delay, map, switchMap, take, tap } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
 import { HttpClient } from '@angular/common/http';
+
+
+interface BookingData {
+  bookedFrom: Date;
+  bookedTo: Date;
+  firstName: string;
+  guestnumber: number;
+  lastName: string;
+  placeId: string;
+  placeImage: string;
+  placeTitle: string;
+  userId: string;
+}
 
 @Injectable({
   providedIn: 'root',
@@ -45,12 +58,12 @@ export class BookingService {
         { ...newBooking, id: null }
       )
       .pipe(
-        switchMap(resData => {
+        switchMap((resData) => {
           generatedId = resData.name;
           return this.bookings;
         }),
         take(1),
-        tap(bookings => {
+        tap((bookings) => {
           newBooking.id = generatedId;
           this._bookings.next(bookings.concat(newBooking));
         })
@@ -67,5 +80,39 @@ export class BookingService {
         );
       })
     );
+  }
+
+  fetchBookings() {
+    return this.http
+      .get<{ [key: string]: BookingData }>(
+        `https://ionic-angular-backend-66c35-default-rtdb.asia-southeast1.firebasedatabase.app/bookings.json?orderBy="userId"&equalTo="${this.auth.userId}"`
+      )
+      .pipe(
+        map((bookingData) => {
+          const bookings = [];
+          for (const key in bookingData) {
+            if (bookingData.hasOwnProperty(key)) {
+              bookings.push(
+                new Booking(
+                  key,
+                  bookingData[key].placeId,
+                  bookingData[key].userId,
+                  bookingData[key].placeTitle,
+                  bookingData[key].placeImage,
+                  bookingData[key].firstName,
+                  bookingData[key].lastName,
+                  bookingData[key].guestnumber,
+                  new Date(bookingData[key].bookedFrom),
+                  new Date(bookingData[key].bookedTo)
+                )
+              );
+            }
+          }
+          return bookings;
+        }),
+        tap((bookings) => {
+          this._bookings.next(bookings);
+        })
+      );
   }
 }

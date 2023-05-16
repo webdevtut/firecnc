@@ -10,7 +10,12 @@
 
 <ion-content class="ion-padding">
   <ion-grid>
-    <ion-row>
+    <ion-row *ngIf="isLoading">
+      <ion-col size-md="6" offset-md="3" class="ion-text-center ion-padding">
+        <ion-spinner color="primary"></ion-spinner>
+      </ion-col>
+    </ion-row>
+    <ion-row *ngIf="!isLoading">
       <ion-col size-md="6" offset-md="3" *ngIf="!loadedBookings || loadedBookings.length <= 0" class="ion-text-center">
         <ion-text color="tertiary">No Bookings found</ion-text>
       </ion-col>
