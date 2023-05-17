@@ -6,6 +6,7 @@ import { IonicModule } from '@ionic/angular';
 import { NewOfferPageRoutingModule } from './new-offer-routing.module';
 
 import { NewOfferPage } from './new-offer.page';
+import { ImagePickerComponent } from 'src/app/shared/pickers/image-picker/image-picker.component';
 
 @NgModule({
   imports: [
@@ -14,6 +15,6 @@ import { NewOfferPage } from './new-offer.page';
     IonicModule,
     NewOfferPageRoutingModule
   ],
-  declarations: [NewOfferPage]
+  declarations: [NewOfferPage, ImagePickerComponent]
 })
 export class NewOfferPageModule {}
