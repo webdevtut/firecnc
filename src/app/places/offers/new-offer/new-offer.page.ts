@@ -3,6 +3,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { PlacesService } from '../../places.service';
 import { Router } from '@angular/router';
 import { LoadingController } from '@ionic/angular';
+import { switchMap } from 'rxjs';
 
 @Component({
   selector: 'app-new-offer',
@@ -40,13 +41,15 @@ export class NewOfferPage implements OnInit {
         updateOn: 'blur',
         validators: [Validators.required],
       }),
+      image: new FormControl(null),
     });
   }
 
   onCreateOffer() {
-    if (this.form.invalid) {
+    if (this.form.invalid || !this.form.get('image').value) {
       return;
     }
+
     this.loaderCtrl
       .create({
         message: 'Creating place..',
@@ -54,23 +57,29 @@ export class NewOfferPage implements OnInit {
       .then((loadingEl) => {
         loadingEl.present();
         this.placeService
-        .addplaces(
-          this.form.value.title,
-          this.form.value.description,
-          +this.form.value.price,
-          new Date(this.form.value.dateFrom),
-          new Date(this.form.value.dateTo)
-        )
-        .subscribe(() => {
-          loadingEl.dismiss();
-          this.form.reset();
-          this.Router.navigate(['/places/tabs/offers']);
-        });
+          .uploadImage(this.form.get('image').value)
+          .pipe(
+            switchMap(uploadRes => {
+              return this.placeService.addplaces(
+                this.form.value.title,
+                this.form.value.description,
+                +this.form.value.price,
+                new Date(this.form.value.dateFrom),
+                new Date(this.form.value.dateTo),
+                uploadRes
+              );
+            })
+          )
+          .subscribe(() => {
+            loadingEl.dismiss();
+            this.form.reset();
+            this.Router.navigate(['/places/tabs/offers']);
+          });
       });
   }
 
 
   onImagePicked(imgData) {
-
+    this.form.patchValue({ image: imgData });
   }
 }

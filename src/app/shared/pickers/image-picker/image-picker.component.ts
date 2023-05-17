@@ -7,7 +7,7 @@ import { Camera, CameraResultType } from '@capacitor/camera';
   styleUrls: ['./image-picker.component.scss'],
 })
 export class ImagePickerComponent implements OnInit {
-  @Output() imagePick = new EventEmitter<string>();
+  @Output() imagePick = new EventEmitter<string | File>();
 
   selectedImage: string;
 
@@ -18,14 +18,14 @@ export class ImagePickerComponent implements OnInit {
   onPickImage() {
     Camera.getPhoto({
       quality: 90,
-      allowEditing: true,
+      allowEditing: false,
       height: 320,
-      width: 200,
-      resultType: CameraResultType.Uri,
+      width: 600,
+      resultType: CameraResultType.DataUrl,
     })
       .then((image) => {
-        this.selectedImage = image.webPath;
-        this.imagePick.emit(image.webPath);
+        this.selectedImage = image.dataUrl;
+        this.imagePick.emit(image.dataUrl);
       })
       .catch((err) => {
         console.log(err);

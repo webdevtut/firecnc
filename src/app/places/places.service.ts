@@ -80,19 +80,34 @@ export class PlacesService {
       );
   }
 
+  uploadImage(image: File) {
+    return this.http
+      .post(
+        'http://localhost:5000/api/uploadImage',
+        { image },
+        { responseType: 'text' }
+      )
+      .pipe(
+        map((url) => {
+          return url;
+        })
+      );
+  }
+
   addplaces(
     title: string,
     description: string,
     price: number,
     dateFrom: Date,
-    dateTo: Date
+    dateTo: Date,
+    imageUrl: string
   ) {
     let generatedId: string;
     const newPlace = new Place(
       Math.random().toString(),
       title,
       description,
-      'https://cf.bstatic.com/xdata/images/hotel/max1280x900/251732450.jpg?k=c291e2faa860f79f1a2f81766e5d518ab05bc27f0e421b7d5e1ec6f4e1dd7b54&o=&hp=1',
+      imageUrl,
       price,
       dateFrom,
       dateTo,
