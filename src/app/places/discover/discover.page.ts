@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { PlacesService } from '../places.service';
 import { Place } from '../place.model';
 import { InfiniteScrollCustomEvent, SegmentChangeEventDetail } from '@ionic/angular';
-import { Subscription } from 'rxjs';
+import { Subscription, take } from 'rxjs';
 import { AuthService } from '../../auth/auth.service';
 
 @Component({
@@ -39,7 +39,7 @@ export class DiscoverPage implements OnInit, OnDestroy {
     this.isLoading = true;
     this.placeService.fetchPlaces().subscribe(() => {
       this.isLoading = false;
-    })
+    });
   }
 
   onIonInfinite(ev) {
@@ -66,14 +66,14 @@ export class DiscoverPage implements OnInit, OnDestroy {
   }
 
   onFilterUpdate(event: any) {
-    console.log(event.detail);
-    if (event.detail.value === 'all') {
-      this.relevantPlaces = this.loadedPlaces;
-    } else {
-      this.relevantPlaces = this.loadedPlaces.filter(
-        (place) => place.userId !== this.authService.userId
-      );
-      console.log(this.relevantPlaces);
-    }
+    this.authService.userId.pipe(take(1)).subscribe((userId) => {
+      if (event.detail.value === 'all') {
+        this.relevantPlaces = this.loadedPlaces;
+      } else {
+        this.relevantPlaces = this.loadedPlaces.filter(
+          (place) => place.userId !== userId
+        );
+      }
+    });
   }
 }

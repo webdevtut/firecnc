@@ -40,34 +40,40 @@ export class BookingService {
     dateTo: Date
   ) {
     let generatedId: string;
-    const newBooking = new Booking(
-      Math.random().toString(),
-      placeId,
-      this.auth.userId,
-      placeTitle,
-      placeImage,
-      firstName,
-      lastName,
-      guestNumber,
-      dateFrom,
-      dateTo
+    let newBooking;
+    return this.auth.userId.pipe(
+      take(1),
+      switchMap((userId) => {
+        if (!userId) {
+          throw new Error('No user Id found!');
+        }
+        newBooking = new Booking(
+          Math.random().toString(),
+          placeId,
+          userId,
+          placeTitle,
+          placeImage,
+          firstName,
+          lastName,
+          guestNumber,
+          dateFrom,
+          dateTo
+        );
+        return this.http.post<{ name: string }>(
+          'https://ionic-angular-backend-66c35-default-rtdb.asia-southeast1.firebasedatabase.app/bookings.json',
+          { ...newBooking, id: null }
+        );
+      }),
+      switchMap((resData) => {
+        generatedId = resData.name;
+        return this.bookings;
+      }),
+      take(1),
+      tap((bookings) => {
+        newBooking.id = generatedId;
+        this._bookings.next(bookings.concat(newBooking));
+      })
     );
-    return this.http
-      .post<{ name: string }>(
-        'https://ionic-angular-backend-66c35-default-rtdb.asia-southeast1.firebasedatabase.app/bookings.json',
-        { ...newBooking, id: null }
-      )
-      .pipe(
-        switchMap((resData) => {
-          generatedId = resData.name;
-          return this.bookings;
-        }),
-        take(1),
-        tap((bookings) => {
-          newBooking.id = generatedId;
-          this._bookings.next(bookings.concat(newBooking));
-        })
-      );
   }
 
   cancelBooking(bookingId: string) {

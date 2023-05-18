@@ -87,11 +87,6 @@ export class PlacesService {
         { image },
         { responseType: 'text' }
       )
-      .pipe(
-        map((url) => {
-          return url;
-        })
-      );
   }
 
   addplaces(
@@ -103,39 +98,38 @@ export class PlacesService {
     imageUrl: string
   ) {
     let generatedId: string;
-    const newPlace = new Place(
-      Math.random().toString(),
-      title,
-      description,
-      imageUrl,
-      price,
-      dateFrom,
-      dateTo,
-      this.authService.userId
+    let newPlace: Place;
+    return this.authService.userId.pipe(
+      take(1),
+      switchMap((userId) => {
+        if (!userId) {
+          throw new Error('No User found');
+        }
+        newPlace = new Place(
+          Math.random().toString(),
+          title,
+          description,
+          imageUrl,
+          price,
+          dateFrom,
+          dateTo,
+          userId
+        );
+        return this.http.post<{ name: string }>(
+          'https://ionic-angular-backend-66c35-default-rtdb.asia-southeast1.firebasedatabase.app/offered-places.json',
+          { ...newPlace, id: null }
+        );
+      }),
+      switchMap((resData) => {
+        generatedId = resData.name;
+        return this.places;
+      }),
+      take(1),
+      tap((places) => {
+        newPlace.id = generatedId;
+        this._places.next(places.concat(newPlace));
+      })
     );
-    return this.http
-      .post<{ name: string }>(
-        'https://ionic-angular-backend-66c35-default-rtdb.asia-southeast1.firebasedatabase.app/offered-places.json',
-        { ...newPlace, id: null }
-      )
-      .pipe(
-        switchMap((resData) => {
-          generatedId = resData.name;
-          return this.places;
-        }),
-        take(1),
-        tap((places) => {
-          newPlace.id = generatedId;
-          this._places.next(places.concat(newPlace));
-        })
-      );
-    // return this._places.pipe(
-    //   take(1),
-    //   delay(1000),
-    //   tap((places) => {
-    //     this._places.next(places.concat(newPlace));
-    //   })
-    // );
   }
 
   updatePlace(placeId: string, title: string, description: string) {
@@ -143,13 +137,13 @@ export class PlacesService {
     return this.places.pipe(
       take(1),
       switchMap((places) => {
-        if(!places || places.length <=0 ){
+        if (!places || places.length <= 0) {
           return this.fetchPlaces();
         } else {
           return of(places);
         }
       }),
-      switchMap(places => {
+      switchMap((places) => {
         const updatedPlaceIndex = places.findIndex((pl) => pl.id === placeId);
         updatedPlaces = [...places];
         const oldPlace = updatedPlaces[updatedPlaceIndex];

@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { AuthService } from './auth.service';
+import { AuthResponseData, AuthService } from './auth.service';
 import { Router } from '@angular/router';
 import { AlertController, LoadingController } from '@ionic/angular';
 import { NgForm } from '@angular/forms';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-auth',
@@ -24,7 +25,6 @@ export class AuthPage implements OnInit {
 
   authenticate(email: string, password: string) {
     this.isLoading = true;
-    this.authService.login();
     this.loadingCtrl
       .create({
         keyboardClose: true,
@@ -32,14 +32,23 @@ export class AuthPage implements OnInit {
       })
       .then((loadingEl) => {
         loadingEl.present();
-        this.authService.signup(email, password).subscribe((resData) => {
-          this.isLoading = false;
-          loadingEl.dismiss();
-          this.router.navigateByUrl('/places/tabs/discover');
-        }, errRes => {
-          loadingEl.dismiss();
-          this.showAlert(errRes.error.error.message);
-        });
+        let authObs: Observable<AuthResponseData>;
+        if (this.isLogin) {
+          authObs = this.authService.login(email, password);
+        } else {
+          authObs = this.authService.signup(email, password);
+        }
+        authObs.subscribe(
+          (resData) => {
+            this.isLoading = false;
+            loadingEl.dismiss();
+            this.router.navigateByUrl('/places/tabs/discover');
+          },
+          (errRes) => {
+            loadingEl.dismiss();
+            this.showAlert(errRes.error.error.message);
+          }
+        );
       });
   }
 
