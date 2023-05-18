@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { AuthService } from './auth.service';
 import { Router } from '@angular/router';
-import { LoadingController } from '@ionic/angular';
+import { AlertController, LoadingController } from '@ionic/angular';
 import { NgForm } from '@angular/forms';
 
 @Component({
@@ -16,12 +16,13 @@ export class AuthPage implements OnInit {
   constructor(
     private authService: AuthService,
     private router: Router,
-    private loadingCtrl: LoadingController
+    private loadingCtrl: LoadingController,
+    private alrtCtrl: AlertController
   ) {}
 
   ngOnInit() {}
 
-  onLogin() {
+  authenticate(email: string, password: string) {
     this.isLoading = true;
     this.authService.login();
     this.loadingCtrl
@@ -31,33 +32,36 @@ export class AuthPage implements OnInit {
       })
       .then((loadingEl) => {
         loadingEl.present();
-        setTimeout(() => {
+        this.authService.signup(email, password).subscribe((resData) => {
           this.isLoading = false;
           loadingEl.dismiss();
           this.router.navigateByUrl('/places/tabs/discover');
-        }, 1500);
+        }, errRes => {
+          loadingEl.dismiss();
+          this.showAlert(errRes.error.error.message);
+        });
       });
   }
 
-  onSubmit(form: NgForm){
-    if(form.invalid){
+  onSubmit(form: NgForm) {
+    if (form.invalid) {
       return;
     }
     const email = form.value.email;
     const password = form.value.password;
 
-    console.log(email, password);
-    
-
-    if(!this.isLogin) {
-      // Send a request to login endpoint
-    }
-    else {
-      // Send a request to signup endpoint
-    }
+    this.authenticate(email, password);
   }
 
-  onSwitchAuthMode(){
-    this.isLogin = !this.isLogin;
+  private showAlert(message: string) {
+    this.alrtCtrl
+      .create({
+        header: 'Authentication Failed!',
+        message: message,
+        buttons: ['Okay'],
+      })
+      .then((alertEl) => {
+        alertEl.present();
+      });
   }
 }
