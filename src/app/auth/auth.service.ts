@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { BehaviorSubject, from, map, tap } from 'rxjs';
 import { User } from './user.model';
@@ -18,8 +18,9 @@ export interface AuthResponseData {
 @Injectable({
   providedIn: 'root',
 })
-export class AuthService {
+export class AuthService implements OnDestroy {
   private _user = new BehaviorSubject<User>(null);
+  private activeLogoutTimer: any;
 
   get userIsAuthenticated() {
     return this._user.asObservable().pipe(
@@ -71,6 +72,7 @@ export class AuthService {
       }), tap(user => {
         if(user) {
           this._user.next(user);
+          this.autoLogout(user.tokenduration);
         }
       }), map(user => {
         return !!user;
@@ -97,15 +99,35 @@ export class AuthService {
   }
 
   logout() {
+    if(this.activeLogoutTimer) {
+      clearTimeout(this.activeLogoutTimer);
+    }
     this._user.next(null);
     Preferences.remove({key: 'authData'});
   }
 
+  ngOnDestroy(): void {
+    if(this.activeLogoutTimer) {
+      clearTimeout(this.activeLogoutTimer);
+    }
+  }
+
+  private autoLogout(duration: number) {
+    if(this.activeLogoutTimer) {
+      clearTimeout(this.activeLogoutTimer);
+    }
+   this.activeLogoutTimer = setTimeout(() => {
+      this.logout();
+    }, duration);
+  }
+
   private setUserData(userData: AuthResponseData) {
     const expTime = new Date(new Date().getTime() + +userData.expiresIn * 1000);
+    const user = new User(userData.localId, userData.email, userData.idToken, expTime);
     this._user.next(
-      new User(userData.localId, userData.email, userData.idToken, expTime)
+      user
     );
+    this.autoLogout(user.tokenduration);
     this.storeAuthData(
       userData.localId,
       userData.idToken,
