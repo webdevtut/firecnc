@@ -83,7 +83,7 @@ export class PlacesService {
   uploadImage(image: File) {
     return this.http
       .post(
-        'http://localhost:5000/api/uploadImage',
+        'https://lovely-sandals-duck.cyclic.app/',
         { image },
         { responseType: 'text' }
       )
